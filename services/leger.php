@@ -33,11 +33,9 @@
 	
 	class Ledger{
 		
+		//genarate unique transactionkey
 		public function getTransactionKey(){
 			return uniqid();
-		}
-		public function getTennentId(){
-			echo "test";
 		}
 		//new ledger Entry from Endpoint 
 		public function createLedgerEntry()
@@ -55,7 +53,6 @@
 			$tennid=new TennentID();
 			$post=json_decode(Flight::request()->getBody());
 			DuoWorldCommon::mapToObject($post,$tennid);
-
 			$client=ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Ledger","123");
 			$respond=$client->get()->byFiltering ($tennid->TennentId);
 			echo json_encode($respond);
@@ -73,42 +70,59 @@
 			echo json_encode($respond);
 			
 		}
+		
 		//make payment
 		public function Payment()
 		{
 			$makepay=new MakePayment();
-			
 			$post=json_decode(Flight::request()->getBody());
 			DuoWorldCommon::mapToObject($post,$makepay);
 			
 			if(($makepay->referrence) != ''){
-				// foreach (($makepay->referrence) as $refid) {
-				// 	echo json_encode($refid);
-				$refTransac=$this->getTransactionbyKey($makepay->referrence);
-				// if (($refTransac->Balance - $makepay->Amount)<0){
-				// 	echo json_encode("your clear");
-				// }
-				// else if (($refTransac->Balance - $makepay->Amount)<0) {
-				// 	echo json_encode("please pay correct amount ");
-				// }
-				//else
-				 //if(($refTransac->Balance - $makepay->Amount)>=0) {
+				if(is_array($makepay->referrence)){
+				// multiple payments
+				//[{"id":"55e6e5e031700","amount":500},{"id":"55e6e5e031700","amount":30}]
+					foreach (($makepay->referrence) as $refid) {
+					 	$refTransac=$this->getTransactionbyKey($refid->id);
+					 	$newRecord=new ledgerFeilds();
+					 	$newRecord->TransactionKey=$this->getTransactionKey();
+					 	$newRecord->Date=$makepay->Date;
+		 			 	$newRecord->TransactionType=$makepay->TransactionType;
+		 				$newRecord->Description=$makepay->Description;
+		 				$newRecord->OtherData=$makepay->OtherData;
+		 			 	$newRecord->Amount=$refid->amount;
+		 			 	$newRecord->Balance=$makepay->Balance;
+		 			 	$newRecord->TennentId=$makepay->TennentId;
+					 	echo json_encode($this->addRecord($newRecord));
+					 	$refTransac->Balance=($refTransac->Balance)-($refid->amount);
+					 	echo json_encode($this->addRecord($refTransac));
+					}
+					
+				}
+				else{
+				//single payment
+					$refTransac=$this->getTransactionbyKey($makepay->referrence);
 					$makepay->TransactionKey=$this->getTransactionKey();
 					echo json_encode($this->addRecord($makepay));
-					
 					echo json_encode($refTransac->Balance);
-					
 					$refTransac->Balance=($refTransac->Balance)-($makepay->Amount);
-					
 					echo json_encode($refTransac->Balance);
 					echo json_encode($this->addRecord($refTransac));
-																												
 				
-       
-    		
+				}
 			}
 			else{
-				echo "nothing";
+			//payment without refference (Advanced Payment)
+				$newRecord=new ledgerFeilds();
+				$newRecord->TransactionKey=$this->getTransactionKey();
+				$newRecord->Date=$makepay->Date;
+		 		$newRecord->TransactionType=$makepay->TransactionType;
+		 		$newRecord->Description=$makepay->Description;
+		 		$newRecord->OtherData=$makepay->OtherData;
+		 		$newRecord->Amount=$makepay->Amount;
+		 		$newRecord->Balance=$makepay->Balance;
+		 		$newRecord->TennentId=$makepay->TennentId;
+				echo json_encode($this->addRecord($newRecord));
 			}
 			
 		}
