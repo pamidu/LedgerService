@@ -1,7 +1,7 @@
 <?php
 	class ledgerFeilds{
 		
-		public $TransactionKey;
+		public $InvoiceNumber;
 		public $Date;
 		public $TransactionType;
 		public $Description;
@@ -14,11 +14,11 @@
 	class TennentID{
 		public $TennentId;
 	}
-	class TransactionKey{
-		public $TransactionKey;
+	class InvoiceNumber{
+		public $InvoiceNumber;
 	}
 	class MakePayment{
-		public $TransactionKey;
+		public $InvoiceNumber;
 		public $Date;
 		public $TransactionType;
 		public $Description;
@@ -33,8 +33,8 @@
 	
 	class Ledger{
 		
-		//genarate unique transactionkey
-		public function getTransactionKey(){
+		//genarate unique InvoiceNumber
+		public function getInvoiceNumber(){
 			return uniqid();
 		}
 		//new ledger Entry from Endpoint 
@@ -45,7 +45,7 @@
 			$json=json_decode(Flight::request()->getBody());
 			DuoWorldCommon::mapToObject($json,$ledger);
 			$client = ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Ledger","123");
-			$respond=$client->store()->byKeyField("TransactionKey")->andStore($ledger);
+			$respond=$client->store()->byKeyField("InvoiceNumber")->andStore($ledger);
 			echo json_encode($respond);
 		}
 		
@@ -61,12 +61,12 @@
 		
 		public function TransactionDetails()
 		{
-			$tkey=new TransactionKey();
+			$tkey=new InvoiceNumber();
 			$post=json_decode(Flight::request()->getBody());
 			DuoWorldCommon::mapToObject($post,$tkey);
 		
 			$client=ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Ledger","123");
-			$respond=$client->get()->byKey($tkey->TransactionKey);
+			$respond=$client->get()->byKey($tkey->InvoiceNumber);
 			echo json_encode($respond);
 			
 		}
@@ -85,7 +85,7 @@
 					foreach (($makepay->referrence) as $refid) {
 					 	$refTransac=$this->getTransactionbyKey($refid->id);
 					 	$newRecord=new ledgerFeilds();
-					 	$newRecord->TransactionKey=$this->getTransactionKey();
+					 	$newRecord->InvoiceNumber=$makepay->InvoiceNumber;
 					 	$newRecord->Date=$makepay->Date;
 		 			 	$newRecord->TransactionType=$makepay->TransactionType;
 		 				$newRecord->Description=$makepay->Description;
@@ -101,8 +101,8 @@
 				}
 				else{
 				//single payment
-					$refTransac=$this->getTransactionbyKey($makepay->referrence);
-					$makepay->TransactionKey=$this->getTransactionKey();
+					$refTransac=$this->getbyInvoiceNumber($makepay->referrence);
+					//$makepay->InvoiceNumber=$this->getInvoiceNumber();
 					echo json_encode($this->addRecord($makepay));
 					echo json_encode($refTransac->Balance);
 					$refTransac->Balance=($refTransac->Balance)-($makepay->Amount);
@@ -113,20 +113,21 @@
 			}
 			else{
 			//payment without refference (Advanced Payment)
-				$newRecord=new ledgerFeilds();
-				$newRecord->TransactionKey=$this->getTransactionKey();
-				$newRecord->Date=$makepay->Date;
-		 		$newRecord->TransactionType=$makepay->TransactionType;
-		 		$newRecord->Description=$makepay->Description;
-		 		$newRecord->OtherData=$makepay->OtherData;
-		 		$newRecord->Amount=$makepay->Amount;
-		 		$newRecord->Balance=$makepay->Balance;
-		 		$newRecord->TennentId=$makepay->TennentId;
-				echo json_encode($this->addRecord($newRecord));
+				echo json_encode("Advanced Payment Not Allowed");
+				// $newRecord=new ledgerFeilds();
+				// $newRecord->InvoiceNumber=$makepay->InvoiceNumber;
+				// $newRecord->Date=$makepay->Date;
+		 	// 	$newRecord->TransactionType=$makepay->TransactionType;
+		 	// 	$newRecord->Description=$makepay->Description;
+		 	// 	$newRecord->OtherData=$makepay->OtherData;
+		 	// 	$newRecord->Amount=$makepay->Amount;
+		 	// 	$newRecord->Balance=$makepay->Balance;
+		 	// 	$newRecord->TennentId=$makepay->TennentId;
+				// echo json_encode($this->addRecord($newRecord));
 			}
 			
 		}
-		public function getTransactionbyKey($key){
+		public function getbyInvoiceNumber($key){
 			$client=ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Ledger","123");
 			$respond=$client->get()->byKey($key);
 			return $respond;
@@ -134,7 +135,7 @@
 		}
 		public function addRecord($obj){
 			$client = ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Ledger","123");
-			$respond=$client->store()->byKeyField("TransactionKey")->andStore($obj);
+			$respond=$client->store()->byKeyField("InvoiceNumber")->andStore($obj);
 			return ($respond);
 			
 		}
@@ -142,7 +143,7 @@
 	
 	function __construct(){
 			
-			Flight::route("GET /getTransactionKey", function(){$this->getTransactionKey();});
+			Flight::route("GET /getInvoiceNumber", function(){$this->getInvoiceNumber();});
 			Flight::route("POST /createLedgerEntry", function(){$this->createLedgerEntry();});
 			Flight::route("POST /transactionForTennent", function(){$this->transactionForTennent();});
 			Flight::route("POST /transactionDetails", function(){$this->TransactionDetails();});
