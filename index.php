@@ -10,11 +10,13 @@
 		require_once ("./services/testservice.php");
 		require_once ("./services/userlibrary.php");
 		require_once ("./services/leger.php");
+		require_once ("./services/product.php");
 
 
 		new TestService();
 		new UserLibrary();
 		new Ledger();
+		new Product();
 
 		//Flight::route("GET /sample", function (){echo "sample";});
 

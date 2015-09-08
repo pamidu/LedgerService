@@ -45,7 +45,7 @@
 			$json=json_decode(Flight::request()->getBody());
 			DuoWorldCommon::mapToObject($json,$ledger);
 			$client = ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Ledger","123");
-			$respond=$client->store()->byKeyField("InvoiceNumber")->andStore($ledger);
+			$respond=$client->store()->byKeyField("$product->productArry")->andStore($ledger);
 			echo json_encode($respond);
 		}
 		
@@ -83,7 +83,7 @@
 				// multiple payments
 				//[{"id":"55e6e5e031700","amount":500},{"id":"55e6e5e031700","amount":30}]
 					foreach (($makepay->referrence) as $refid) {
-					 	$refTransac=$this->getTransactionbyKey($refid->id);
+					 	$refTransac=$this->getbyInvoiceNumber($refid->id);
 					 	$newRecord=new ledgerFeilds();
 					 	$newRecord->InvoiceNumber=$makepay->InvoiceNumber;
 					 	$newRecord->Date=$makepay->Date;
