@@ -1,29 +1,27 @@
 <?php
-		class productclass{
-			public $productId;
-			public $productcode;
-			public $other;
-			public $imageId;
-			public $taxId;
-			public $unitPrice;
-			public $productCategory;
-			public $productType;
-			public $reorderLevel;
-			public $productGroup;
-			public $productArry;
-			public $measurement;
-			public $active;
+	class productclass{
+		public $productId;
+		public $productcode;
+		public $other;
+		public $imageId;
+		public $taxId;
+		public $unitPrice;
+		public $productCategory;
+		public $productType;
+		public $reorderLevel;
+		public $productGroup;
+		public $productArry;
+		public $measurement;
+		public $active;
 
-			function __construct(){
-				$this->productArry = array();
-			}
-
-			
-
+		function __construct(){
+			$this->productArry = array();
 		}
-		class getproduct{
-			public $productId;
-		}
+	}
+
+	class getproduct{
+		public $productId;
+	}
 
 	
 	class Product{
@@ -58,7 +56,6 @@
 		{
 			# code...
 
-		
 			$pro=new productclass();
 			$json=json_decode(Flight::request()->getBody());
 			$client = ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Products","123");
@@ -73,10 +70,10 @@
 			}else{
 				echo json_encode("not empty");
 				foreach ($json->productArry as $product) {
-							echo json_encode($product);
-					 		$refproduct=$this->getbyProductId($product);
-					 	 	unset($refproduct->__osHeaders);
-		 					array_push($pro->productArry, $refproduct);
+					echo json_encode($product);
+					$refproduct=$this->getbyProductId($product);
+					unset($refproduct->__osHeaders);
+		 			array_push($pro->productArry, $refproduct);
 
 				}
 				
@@ -95,7 +92,6 @@
 			$pid=new getproduct();
 			$post=json_decode(Flight::request()->getBody());
 			DuoWorldCommon::mapToObject($post,$pid);
-			//var_dump($pid);
 			$client=ObjectStoreClient::WithNamespace(DuoWorldCommon::GetHost(),"Products","123");
 			$respond=$client->get()->byKey($post->productId);
 			echo json_encode($respond);
@@ -109,16 +105,8 @@
 			Flight::route("POST /addproducts", function(){$this->addproducts();});
 			Flight::route("POST /getproduct",function(){$this->getProducts();});
 			Flight::route("POST /deleteproduct",function(){$this->deleteProduct();});
-			
-			
-			
-			
-		}
-		
+		}	
 	}
-
-
-
 	
 ?>
 

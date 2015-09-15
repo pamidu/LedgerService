@@ -18,8 +18,6 @@
 		new Ledger();
 		new Product();
 
-		//Flight::route("GET /sample", function (){echo "sample";});
-
 		Flight::start();
 	}
 
